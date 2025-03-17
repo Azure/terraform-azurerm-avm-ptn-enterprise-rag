@@ -22,7 +22,8 @@ locals {
   diagnostic_settings = {
     sendToLogAnalytics = {
       name                  = "sendToLogAnalytics"
-      workspace_resource_id = local.log_analytics_workspace_id
+      #workspace_resource_id = local.log_analytics_workspace_id
+      app_service_plan_id = var.app_service_plan_create ? module.app_service_plan[0].id : var.app_service_plan_id
     }
   }
 }

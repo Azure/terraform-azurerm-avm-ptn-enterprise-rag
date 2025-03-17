@@ -30,23 +30,7 @@ variable "azure_ai_services_id" {
   description = "The ID of the existing AI Services resource."
 }
 
-variable "cosmos_db_create" {
-  type        = bool
-  default     = true
-  description = "Indicates whether to create a Cosmos DB resource."
-}
 
-variable "cosmos_db_account_id" {
-  type        = string
-  default     = null
-  description = "The ID of the existing Cosmos DB account."
-}
-
-variable "cosmos_db_database_name" {
-  type        = string
-  default     = null
-  description = "The name of the existing Cosmos DB database."
-}
 
 variable "key_vault_create" {
   type        = bool
