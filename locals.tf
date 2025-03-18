@@ -1,11 +1,12 @@
 # Calculate resource names
 locals {
   name_replacements = {
-    workload    = var.resource_name_workload
-    environment = var.resource_name_environment
-    location    = var.location
-    uniqueness  = random_string.unique_name.id
-    sequence    = format("%03d", var.resource_name_sequence_start)
+    workload       = var.resource_name_workload
+    environment    = var.resource_name_environment
+    location       = var.location
+    location_short = coalesce(var.resource_name_location_short, substr(var.location, 0, 3))
+    uniqueness     = random_string.unique_name.id
+    sequence       = format("%03d", var.resource_name_sequence_start)
   }
 
   resource_names = { for key, value in var.resource_name_templates : key => templatestring(value, local.name_replacements) }
@@ -13,17 +14,27 @@ locals {
 
 # Resources
 locals {
-  resource_group_name = var.resource_group_create ? module.resource_group[0].name : var.resource_group_name
-  virtual_network_id = var.use_private_networking && var.virtual_network_create ? module.virtual_network[0].id : var.virtual_network_id
-
+  resource_group_name  = var.resource_group_create ? module.resource_group[0].name : var.resource_group_name
+  virtual_network_id   = var.use_private_networking && var.virtual_network_create ? module.virtual_network[0].resource_id : var.virtual_network_id
+  app_service_plan_id  = var.app_service_plan_create ? module.app_service_plan[0].resource_id : var.app_service_plan_id
+  key_vault_id         = var.key_vault_create ? module.key_vault[0].resource_id : var.key_vault_id
+  kay_vault_bastion_id = var.key_vault_bastion_create ? module.key_vault_bastion[0].resource_id : var.key_vault_bastion_id
+  storage_account_id   = var.storage_account_create ? module.storage_account[0].resource_id : var.storage_account_id
+  storage_account_name = var.storage_account_create ? module.storage_account[0].name : split("/", var.storage_account_id)[-1]
 }
 
 locals {
   diagnostic_settings = {
     sendToLogAnalytics = {
-      name                  = "sendToLogAnalytics"
+      name = "sendToLogAnalytics"
       #workspace_resource_id = local.log_analytics_workspace_id
-      app_service_plan_id = var.app_service_plan_create ? module.app_service_plan[0].id : var.app_service_plan_id
+
     }
   }
+}
+
+# My IP address
+locals {
+  my_ip_address_split = split(".", data.http.ip.response_body)
+  my_cidr_slash_24    = "${join(".", slice(local.my_ip_address_split, 0, 3))}.0/24"
 }

@@ -4,11 +4,16 @@ variable "location" {
   nullable    = false
 }
 
+variable "resource_name_location_short" {
+  type        = string
+  description = "Short name of the Azure region where the resource should be deployed. Will use the first 3 characters of the location if not supplied."
+  default     = null
+}
 
 variable "resource_name_workload" {
   type        = string
   description = "The name segment for the workload"
-  default     = "demo"
+  default     = "rag"
   validation {
     condition     = can(regex("^[a-z0-9]+$", var.resource_name_workload))
     error_message = "The name segment for the workload must only contain lowercase letters and numbers"
@@ -22,7 +27,7 @@ variable "resource_name_workload" {
 variable "resource_name_environment" {
   type        = string
   description = "The name segment for the environment"
-  default     = "dev"
+  default     = "prod"
   validation {
     condition     = can(regex("^[a-z0-9]+$", var.resource_name_environment))
     error_message = "The name segment for the environment must only contain lowercase letters and numbers"
@@ -47,38 +52,43 @@ variable "resource_name_templates" {
   type        = map(string)
   description = "A map of resource names to use"
   default = {
-    resource_group_name = "rg-$${workload}-$${environment}-$${location}-$${sequence}"
-    azure_open_ai_name                               = "oai-$${workload}-$${environment}-$${location}-$${sequence}"
-    azure_open_ai_private_endpoint_name             = "pe-oai-$${workload}-$${environment}-$${location}-$${sequence}"
-    application_insights_name                      = "ai-$${workload}-$${environment}-$${location}-$${sequence}"
-    log_analytics_workspace_name                   = "law-$${workload}-$${environment}-$${location}-$${sequence}"
-    app_service_plan_name                         = "asp-$${workload}-$${environment}-$${location}-$${sequence}"
-    azure_ai_search_name                     = "aisrc-$${workload}-$${environment}-$${location}-$${sequence}"
-    azure_ai_search_private_endpoint_name = "pe-aisrc-$${workload}-$${environment}-$${location}-$${sequence}"
-    azure_ai_services_name               = "aiser-$${workload}-$${environment}-$${location}-$${sequence}"
-    azure_ai_services_private_endpoint_name = "pe-aiser-$${workload}-$${environment}-$${location}-$${sequence}"
-    cosmos_db_name                       = "cosmos-$${workload}-$${environment}-$${location}-$${sequence}"
-    cosmos_db_private_endpoint_name = "pe-cosmos-$${workload}-$${environment}-$${location}-$${sequence}"
-    cosmos_db_database_name             = "db-$${workload}-$${environment}-$${location}-$${sequence}"
-    key_vault_name                       = "kv-$${workload}-$${environment}-$${location}-$${sequence}"
-    key_vault_private_endpoint_name = "pe-kv-$${workload}-$${environment}-$${location}-$${sequence}"
-    storage_account_name                 = "st$${workload}$${environment}$${location}$${sequence}$${uniqueness}"
-    storage_account_private_endpoint_name = "pe-st-$${workload}-$${environment}-$${location}-$${sequence}"
-    virtual_network_name                  = "vnet-$${workload}-$${environment}-$${location}-$${sequence}"
-    orchestrator_function_app_name                  = "fn-$${workload}-$${environment}-$${location}-$${sequence}"
-    orchestrator_function_app_private_endpoint_name = "pe-fn-orch-$${workload}-$${environment}-$${location}-$${sequence}"
-    orchestrator_function_app_storage_account_name  = "st-fn-orch-$${workload}-$${environment}-$${location}-$${sequence}"
+    resource_group_name                               = "rg-$${workload}-$${environment}-$${location}-$${sequence}"
+    azure_open_ai_name                                = "oai-$${workload}-$${environment}-$${location}-$${sequence}"
+    azure_open_ai_private_endpoint_name               = "pe-oai-$${workload}-$${environment}-$${location}-$${sequence}"
+    application_insights_name                         = "ai-$${workload}-$${environment}-$${location}-$${sequence}"
+    log_analytics_workspace_name                      = "law-$${workload}-$${environment}-$${location}-$${sequence}"
+    app_service_plan_name                             = "asp-$${workload}-$${environment}-$${location}-$${sequence}"
+    azure_ai_search_name                              = "aisrc-$${workload}-$${environment}-$${location}-$${sequence}"
+    azure_ai_search_private_endpoint_name             = "pe-aisrc-$${workload}-$${environment}-$${location}-$${sequence}"
+    azure_ai_services_name                            = "aiser-$${workload}-$${environment}-$${location}-$${sequence}"
+    azure_ai_services_private_endpoint_name           = "pe-aiser-$${workload}-$${environment}-$${location}-$${sequence}"
+    cosmos_db_name                                    = "cdb-$${workload}-$${environment}-$${location}-$${sequence}"
+    cosmos_db_private_endpoint_name                   = "pe-cdb-$${workload}-$${environment}-$${location}-$${sequence}"
+    cosmos_db_database_name                           = "db-$${workload}-$${environment}-$${location}-$${sequence}"
+    cosmos_db_container_conversations_name            = "conversations"
+    cosmos_db_container_datasources_name              = "datasources"
+    key_vault_name                                    = "kv$${workload}$${environment}$${location_short}$${sequence}$${uniqueness}"
+    key_vault_private_endpoint_name                   = "pe-kv-$${workload}-$${environment}-$${location}-$${sequence}"
+    key_vault_bastion_name                            = "kvb$${workload}$${environment}$${location_short}$${sequence}$${uniqueness}"
+    storage_account_name                              = "st$${workload}$${environment}$${location_short}$${sequence}$${uniqueness}"
+    storage_account_private_endpoint_name             = "pe-st-$${workload}-$${environment}-$${location}-$${sequence}"
+    virtual_network_name                              = "vnet-$${workload}-$${environment}-$${location}-$${sequence}"
+    orchestrator_function_app_name                    = "fn-$${workload}-$${environment}-$${location}-$${sequence}"
+    orchestrator_function_app_private_endpoint_name   = "pe-fn-orch-$${workload}-$${environment}-$${location}-$${sequence}"
+    orchestrator_function_app_storage_account_name    = "st-fn-orch-$${workload}-$${environment}-$${location}-$${sequence}"
     data_ingestion_function_app_name                  = "fn-ingest-$${workload}-$${environment}-$${location}-$${sequence}"
     data_ingestion_function_app_private_endpoint_name = "pe-fn-ingest-$${workload}-$${environment}-$${location}-$${sequence}"
     data_ingestion_function_app_storage_account_name  = "st-fn-ingest-$${workload}-$${environment}-$${location}-$${sequence}"
-    app_service_name = "app-$${workload}-$${environment}-$${location}-$${sequence}"
-    app_service_private_endpoint_name = "pe-app-$${workload}-$${environment}-$${location}-$${sequence}"
-    virtual_machine_name = "vm-$${workload}-$${environment}-$${location}-$${sequence}"
-    virtual_machine_network_interface_name = "nic-$${workload}-$${environment}-$${location}-$${sequence}"
-    bastion_host_name = "bas-$${workload}-$${environment}-$${location}-$${sequence}"
-    storage_account_container_documents_name = "documents"
-    storage_account_container_images_name = "docuemnts-images"
-    storage_account_container_nl2sql_name = "nl2sql"
+    app_service_name                                  = "app-$${workload}-$${environment}-$${location}-$${sequence}"
+    app_service_private_endpoint_name                 = "pe-app-$${workload}-$${environment}-$${location}-$${sequence}"
+    virtual_machine_name                              = "vm-$${workload}-$${environment}-$${location}-$${sequence}"
+    virtual_machine_computer_name                     = "vm$${workload}$${environment}$${location_short}$${sequence}"
+    virtual_machine_network_interface_name            = "nic-$${workload}-$${environment}-$${location}-$${sequence}"
+    bastion_host_name                                 = "bas-$${workload}-$${environment}-$${location}-$${sequence}"
+    bastion_host_public_ip_name                       = "pip-bas-$${workload}-$${environment}-$${location}-$${sequence}"
+    storage_account_container_documents_name          = "documents"
+    storage_account_container_images_name             = "docuemnts-images"
+    storage_account_container_nl2sql_name             = "nl2sql"
   }
 }
 

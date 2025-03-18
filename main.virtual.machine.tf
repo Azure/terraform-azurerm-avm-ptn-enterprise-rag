@@ -5,15 +5,16 @@ module "virtual_machine" {
   version = "0.18.0"
 
   resource_group_name        = local.resource_group_name
-  os_type                    = "linux"
+  os_type                    = "windows"
   name                       = local.resource_names.virtual_machine_name
+  computer_name              = local.resource_names.virtual_machine_computer_name
   sku_size                   = var.virtual_machine_sku
   location                   = var.location
   zone                       = "1"
   encryption_at_host_enabled = false
 
   generated_secrets_key_vault_secret_config = {
-    key_vault_resource_id = local.key_vault_id
+    key_vault_resource_id = local.kay_vault_bastion_id
   }
 
   managed_identities = {
@@ -21,9 +22,9 @@ module "virtual_machine" {
   }
 
   source_image_reference = {
-    publisher = "Canonical"
-    offer     = "0001-com-ubuntu-server-jammy"
-    sku       = "22_04-lts-gen2"
+    publisher = "microsoft-dsvm"
+    offer     = "dsvm-win-2019"
+    sku       = "winserver-2019"
     version   = "latest"
   }
 
@@ -33,14 +34,12 @@ module "virtual_machine" {
       ip_configurations = {
         private = {
           name                          = "private"
-          private_ip_subnet_resource_id = module.virtual_network.subnets["01_ai"].resource_id
+          private_ip_subnet_resource_id = module.virtual_network[0].subnets["01_ai"].resource_id
         }
       }
     }
   }
 
-  diagnostic_settings = local.diagnostic_settings
-  tags                = var.tags
-
-  depends_on = [module.key_vault]
+  #diagnostic_settings = local.diagnostic_settings
+  tags = var.tags
 }

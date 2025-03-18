@@ -4,17 +4,17 @@ module "private_dns_zone_storage_account" {
   source  = "Azure/avm-res-network-privatednszone/azurerm"
   version = "0.3.2"
 
-  resource_group_name = module.resource_group.name
+  resource_group_name = local.resource_group_name
   domain_name         = "privatelink.blob.core.windows.net"
 
   virtual_network_links = {
     primary = {
       vnetlinkname = "storage-account"
-      vnetid       = module.virtual_network.resource_id
+      vnetid       = local.virtual_network_id
     }
   }
 
-  tags = var.tags
+  tags             = var.tags
   enable_telemetry = var.enable_telemetry
 }
 
@@ -43,14 +43,14 @@ module "storage_account" {
   }
 
   private_endpoints = var.use_private_networking ? {
-     primary = {
-      private_dns_zone_resource_ids = [module.private_dns_zone_storage_account.resource_id]
-      subnet_resource_id            = module.virtual_network.subnets["01_ai"].resource_id
+    primary = {
+      private_dns_zone_resource_ids = [module.private_dns_zone_storage_account[0].resource_id]
+      subnet_resource_id            = module.virtual_network[0].subnets["01_ai"].resource_id
       subresource_name              = "blob"
       tags                          = var.tags
     }
   } : null
 
-  tags = var.tags
+  tags             = var.tags
   enable_telemetry = var.enable_telemetry
 }

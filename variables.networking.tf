@@ -18,28 +18,28 @@ variable "virtual_network_address_space" {
 
 variable "virtual_network_subnets" {
   type = map(object({
-    name           = string
+    name        = string
     prefix_size = number
   }))
   default = {
     "01_ai" = {
-      name           = "ai-subnet"
+      name        = "ai-subnet"
       prefix_size = 26
     }
     "02_bastion" = {
-      name           = "AzureBastionSubnet"
+      name        = "AzureBastionSubnet"
       prefix_size = 26
     }
     "03_app_integration" = {
-      name           = "app-integration-subnet"
+      name        = "app-integration-subnet"
       prefix_size = 26
     }
     "04_app_service" = {
-      name           = "app-services-subnet"
+      name        = "app-services-subnet"
       prefix_size = 26
     }
     "05_database" = {
-      name           = "database-subnet"
+      name        = "database-subnet"
       prefix_size = 26
     }
   }

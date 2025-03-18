@@ -32,17 +32,6 @@ variable "azure_ai_services_id" {
 
 
 
-variable "key_vault_create" {
-  type        = bool
-  default     = true
-  description = "Indicates whether to create a Key Vault."
-}
-
-variable "key_vault_id" {
-  type        = string
-  default     = null
-  description = "The ID of the existing Key Vault."
-}
 
 
 
