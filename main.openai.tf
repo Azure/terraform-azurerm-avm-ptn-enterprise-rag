@@ -43,4 +43,5 @@ module "azure_open_ai" {
   } : null
 }
 
+# TODO: Deployments
 # TODO: Secrets

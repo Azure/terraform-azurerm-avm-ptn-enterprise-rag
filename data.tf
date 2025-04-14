@@ -18,3 +18,10 @@ data "azurerm_subnet" "bastion" {
 
   depends_on = [module.virtual_network]
 }
+
+data "azurerm_key_vault" "this" {
+  count = var.key_vault_create ? 1 : 0
+
+  name                = provider::azurerm::parse_resource_id(var.key_vault_id).resource_name
+  resource_group_name  = provider::azurerm::parse_resource_id(var.key_vault_id).resource_group_name
+}

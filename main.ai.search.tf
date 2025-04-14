@@ -40,7 +40,7 @@ module "ai_search" {
   private_endpoints = var.use_private_networking ? {
     primary = {
       private_dns_zone_resource_ids = var.use_private_networking && var.virtual_network_create ? [module.private_dns_zone_ai_search[0].resource_id] : []
-      subnet_resource_id            = module.virtual_network[0].subnets["01_ai"].resource_id
+      subnet_resource_id            = module.virtual_network[0].subnets["01_ai"].resource_id # What if we are not creating virtual networks?
       subresource_name              = "searchService"
       tags                          = var.tags
     }
@@ -64,10 +64,10 @@ resource "azurerm_search_shared_private_link_service" "storage" {
 }
 
 resource "azurerm_search_shared_private_link_service" "data_ingestion_function_app" {
-  name               = "example-spl" # TODO:
+  name               = "searchFuncAppPrivatelink" # TODO:
   search_service_id  = var.azure_ai_search_create ? module.ai_search[0].resource_id : var.azure_ai_search_id
   subresource_name   = "sites"
-  target_resource_id = var.data_ingestion_function_app_create ? module.data_ingestion_function_app[0].resource_id : var.data_ingestion_function_app_id
+  target_resource_id = module.data_ingestion_function_app[0].resource_id 
   request_message    = "please approve"
 }
 
