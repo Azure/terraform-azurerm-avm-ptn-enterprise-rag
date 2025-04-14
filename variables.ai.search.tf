@@ -1,65 +1,41 @@
-variable "retrieval_approach" {
-  description = "Orchestrator supports the following retrieval approaches: term, vector, hybrid(term + vector search), or use oyd feature of Azure OpenAI."
-  type        = string
-  default     = "hybrid"
+variable "azure_ai_search_create" {
+  type        = bool
+  default     = true
+  description = "Indicates whether to create an AI Search resource."
 }
 
-variable "search_analyzer_name" {
-  description = "Analyzer language used by Azure search to analyze indexes text content."
+variable "azure_ai_search_id" {
   type        = string
-  default     = "standard"
+  default     = null
+  description = "The ID of the existing AI Search resource."
 }
 
-variable "use_semantic_reranking" {
-  description = "Use semantic reranking on top of search results?"
+variable "azure_ai_search_local_auth_enabled" {
+  description = "Enable local authentication for the Azure AI Search Service."
   type        = bool
   default     = false
 }
 
-variable "search_service_sku_name" {
+variable "azure_ai_search_hosting_mode" {
+  type        = string
+  default     = "default"
+  description = "Specifies the Hosting Mode, which allows for High Density partitions (that allow for up to 1000 indexes) should be supported. Possible values are `highDensity` or `default`. Defaults to `default`. Changing this forces a new Search Service to be created."
+}
+
+variable "azure_ai_search_sku_name" {
   description = "Search service SKU name based on network isolation."
   type        = string
   default     = "standard2"
 }
 
-variable "search_index" {
-  description = "Search index name."
-  type        = string
-  default     = "ragindex"
-}
-
-variable "search_api_version" {
-  description = "Requires version 2023-10-01-Preview or higher for indexProjections and MIS authResourceId."
-  type        = string
-  default     = "2024-07-01"
-}
-
-variable "search_index_interval" {
-  description = "Frequency of search reindexing. PT5M (5 min), PT1H (1 hour), P1D (1 day)."
-  type        = string
-  default     = "PT1H"
-}
-
-variable "search_use_mis" {
-  description = "Use Search Service Managed Identity to Connect to data ingestion function?"
+variable "azure_ai_search_cmk_enforcement_enabled" {
   type        = bool
   default     = false
+  description = "Specifies whether the Search Service should enforce that non-customer resources are encrypted. Defaults to `false`."
 }
 
-variable "chunk_num_tokens" {
-  description = "The number of tokens in each chunk."
+variable "azure_ai_search_semantic_sku" {
   type        = string
-  default     = "2048"
-}
-
-variable "chunk_min_size" {
-  description = "The minimum chunk size below which chunks will be filtered."
-  type        = string
-  default     = "100"
-}
-
-variable "chunk_token_overlap" {
-  description = "The number of tokens to overlap between chunks."
-  type        = string
-  default     = "200"
+  default     = "free"
+  description = "Specifies the Semantic Search SKU which should be used for this Search Service. Possible values include `free` and `standard`."
 }

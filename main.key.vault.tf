@@ -1,5 +1,5 @@
 module "private_dns_zone_key_vault" {
-  count = var.use_private_networking && var.key_vault_create ? 1 : 0
+  count = var.use_private_networking && var.virtual_network_create ? 1 : 0
 
   source  = "Azure/avm-res-network-privatednszone/azurerm"
   version = "0.3.2"
@@ -14,7 +14,8 @@ module "private_dns_zone_key_vault" {
     }
   }
 
-  tags = var.tags
+  tags             = var.tags
+  enable_telemetry = var.enable_telemetry
 }
 
 module "key_vault" {
@@ -31,8 +32,8 @@ module "key_vault" {
 
   private_endpoints = var.use_private_networking ? {
     primary = {
-      private_dns_zone_resource_ids = [module.private_dns_zone_key_vault[0].resource_id]
-      subnet_resource_id            = module.virtual_network[0].subnets["01_ai"].resource_id
+      private_dns_zone_resource_ids = var.use_private_networking && var.virtual_network_create ? [module.private_dns_zone_key_vault[0].resource_id] : []
+      subnet_resource_id            = module.virtual_network[0].subnets["01_ai"].resource_id # TODO: Fetch this dynamically
       subresource_name              = ["vault"]
       tags                          = var.tags
     }
@@ -46,8 +47,7 @@ module "key_vault" {
   }
 
   #diagnostic_settings = local.diagnostic_settings
-  tags = var.tags
-
+  tags             = var.tags
   enable_telemetry = var.enable_telemetry
 }
 
@@ -76,7 +76,6 @@ module "key_vault_bastion" {
   }
 
   #diagnostic_settings = local.diagnostic_settings
-  tags = var.tags
-
+  tags             = var.tags
   enable_telemetry = var.enable_telemetry
 }

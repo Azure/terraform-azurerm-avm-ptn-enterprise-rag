@@ -22,12 +22,17 @@ provider "azurerm" {
       prevent_deletion_if_contains_resources = false
     }
   }
+
+  subscription_id     = ""
   storage_use_azuread = true
 }
 
 # This is the module call
 module "test" {
-  source           = "../../"
-  location         = "uksouth"
-  enable_telemetry = var.enable_telemetry # see variables.tf
+  source                  = "../../"
+  location                = "uksouth"
+  enable_telemetry        = var.enable_telemetry # see variables.tf
+  resource_group_create   = true
+  virtual_machine_create  = false
+  search_service_sku_name = "free"
 }

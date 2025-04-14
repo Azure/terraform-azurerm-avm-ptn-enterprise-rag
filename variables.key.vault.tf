@@ -19,5 +19,5 @@ variable "key_vault_bastion_create" {
 variable "key_vault_bastion_id" {
   type        = string
   default     = null
-  description = "The ID of the existing Key Vault for Bastion."
+  description = "The ID of the existing Key Vault for Bastion. Separate Key Vault required as Bastion needs public network access to it."
 }

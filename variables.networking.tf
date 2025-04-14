@@ -23,7 +23,7 @@ variable "virtual_network_subnets" {
   }))
   default = {
     "01_ai" = {
-      name        = "ai-subnet"
+      name        = "ai-subnet" # If var.virtual_network_create is true, then it will create these subnets, if not it will use a data call.
       prefix_size = 26
     }
     "02_bastion" = {
@@ -51,14 +51,8 @@ variable "use_private_networking" {
   description = "Indicates whether to use private networking."
 }
 
-variable "bastion_host_use" {
+variable "bastion_host_create" {
   type        = bool
   default     = true
   description = "Indicates whether to use a Bastion host."
-}
-
-variable "virtual_machine_use" {
-  type        = bool
-  default     = true
-  description = "Indicates whether to use a virtual machine."
 }

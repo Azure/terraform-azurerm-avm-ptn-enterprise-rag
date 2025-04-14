@@ -14,5 +14,6 @@ module "resource_group" {
   name     = local.resource_names.resource_group_name
   location = var.location
 
-  tags = var.tags
+  tags             = var.tags
+  enable_telemetry = var.enable_telemetry
 }

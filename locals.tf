@@ -14,23 +14,25 @@ locals {
 
 # Resources
 locals {
-  resource_group_name  = var.resource_group_create ? module.resource_group[0].name : var.resource_group_name
-  virtual_network_id   = var.use_private_networking && var.virtual_network_create ? module.virtual_network[0].resource_id : var.virtual_network_id
-  app_service_plan_id  = var.app_service_plan_create ? module.app_service_plan[0].resource_id : var.app_service_plan_id
-  key_vault_id         = var.key_vault_create ? module.key_vault[0].resource_id : var.key_vault_id
-  kay_vault_bastion_id = var.key_vault_bastion_create ? module.key_vault_bastion[0].resource_id : var.key_vault_bastion_id
-  storage_account_id   = var.storage_account_create ? module.storage_account[0].resource_id : var.storage_account_id
-  storage_account_name = var.storage_account_create ? module.storage_account[0].name : split("/", var.storage_account_id)[-1]
+  resource_group_name            = var.resource_group_create ? module.resource_group[0].name : var.resource_group_name
+  virtual_network_id             = var.virtual_network_create ? module.virtual_network[0].resource_id : var.virtual_network_id
+  app_service_plan_id            = var.app_service_plan_create ? module.app_service_plan[0].resource_id : var.app_service_plan_id
+  app_service_id                 = var.app_service_create ? module.web_app_frontend[0].resource_id : var.app_service_id
+  ai_search_id                   = var.azure_ai_search_create ? module.ai_search[0].resource_id : var.azure_ai_search_id
+  azure_open_ai_id               = var.azure_open_ai_create ? module.azure_open_ai[0].resource_id : var.azure_open_ai_id
+  log_analytics_workspace_id     = var.log_analytics_workspace_create ? module.log_analytics_workspace[0].resource_id : var.log_analytics_workspace_resource_id
+  cosmos_db_account_id           = var.cosmos_db_create ? module.cosmos_db[0].resource_id : var.cosmos_db_account_id
+  orchestrator_function_app_id   = var.orchestrator_function_app_create ? module.orchestrator_function_app[0].resource_id : var.orchestrator_function_app_id
+  data_ingestion_function_app_id = var.data_ingestion_function_app_create ? module.data_ingestion_function_app[0].resource_id : var.data_ingestion_function_app_id
+  bastion_host_id                = var.bastion_host_create ? module.bastion_host[0].resource_id : null
+  key_vault_id                   = var.key_vault_create ? module.key_vault[0].resource_id : var.key_vault_id
+  kay_vault_bastion_id           = var.key_vault_bastion_create ? module.key_vault_bastion[0].resource_id : var.key_vault_bastion_id
+  storage_account_id             = var.storage_account_create ? module.storage_account[0].resource_id : var.storage_account_id
+  storage_account_name           = var.storage_account_create ? module.storage_account[0].name : provider::azurerm::parse_resource_id(var.storage_account_id).resource_name
 }
 
 locals {
-  diagnostic_settings = {
-    sendToLogAnalytics = {
-      name = "sendToLogAnalytics"
-      #workspace_resource_id = local.log_analytics_workspace_id
-
-    }
-  }
+  diagnostic_settings = {}
 }
 
 # My IP address

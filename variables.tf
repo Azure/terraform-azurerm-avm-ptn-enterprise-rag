@@ -72,6 +72,7 @@ variable "resource_name_templates" {
     key_vault_bastion_name                            = "kvb$${workload}$${environment}$${location_short}$${sequence}$${uniqueness}"
     storage_account_name                              = "st$${workload}$${environment}$${location_short}$${sequence}$${uniqueness}"
     storage_account_private_endpoint_name             = "pe-st-$${workload}-$${environment}-$${location}-$${sequence}"
+    load_testing_name                                 = "lt-$${workload}-$${environment}-$${location}-$${sequence}"
     virtual_network_name                              = "vnet-$${workload}-$${environment}-$${location}-$${sequence}"
     orchestrator_function_app_name                    = "fn-$${workload}-$${environment}-$${location}-$${sequence}"
     orchestrator_function_app_private_endpoint_name   = "pe-fn-orch-$${workload}-$${environment}-$${location}-$${sequence}"

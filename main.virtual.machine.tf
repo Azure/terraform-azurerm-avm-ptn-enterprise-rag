@@ -41,5 +41,6 @@ module "virtual_machine" {
   }
 
   #diagnostic_settings = local.diagnostic_settings
-  tags = var.tags
+  tags             = var.tags
+  enable_telemetry = var.enable_telemetry
 }

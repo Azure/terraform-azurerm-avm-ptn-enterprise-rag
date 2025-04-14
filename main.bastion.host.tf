@@ -1,5 +1,5 @@
 module "bastion_host_public_ip" {
-  count = var.use_private_networking && var.bastion_host_use ? 1 : 0
+  count = var.use_private_networking && var.bastion_host_create ? 1 : 0
 
   source  = "Azure/avm-res-network-publicipaddress/azurerm"
   version = "0.2.0"
@@ -16,7 +16,7 @@ module "bastion_host_public_ip" {
 }
 
 module "bastion_host" {
-  count = var.use_private_networking && var.bastion_host_use ? 1 : 0
+  count = var.use_private_networking && var.bastion_host_create ? 1 : 0
 
   source  = "Azure/avm-res-network-bastionhost/azurerm"
   version = "0.4.0"
@@ -34,7 +34,7 @@ module "bastion_host" {
 
   ip_configuration = {
     name                 = "ipconfig"
-    subnet_id            = module.virtual_network[0].subnets["02_bastion"].resource_id
+    subnet_id            = data.azurerm_subnet.bastion[0].id
     public_ip_address_id = module.bastion_host_public_ip[0].public_ip_id
   }
 
