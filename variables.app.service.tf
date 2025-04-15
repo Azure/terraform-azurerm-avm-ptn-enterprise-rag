@@ -7,7 +7,7 @@ variable "app_service_plan_create" {
 variable "app_service_plan_id" {
   type        = string
   default     = ""
-  description = "The ID of the existing App Service Plan."
+  description = "The ID of the existing App Service Plan. Must a Linux App Service Plan."
 }
 
 variable "app_service_plan_sku_name" {

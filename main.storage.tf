@@ -55,7 +55,9 @@ module "storage_account" {
   enable_telemetry = var.enable_telemetry
 }
 
-module "orchestrator_storage_account" {
+module "orchestrator_fa_storage_account" {
+  count = var.orchestrator_function_app_storage_account_create ? 1 : 0
+
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
   version = "0.5.0"
 
@@ -83,7 +85,9 @@ module "orchestrator_storage_account" {
   enable_telemetry = var.enable_telemetry
 }
 
-module "data_ingestion_storage_account" {
+module "data_ingestion_fa_storage_account" {
+  count = var.data_ingestion_function_app_storage_account_create ? 1 : 0
+
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
   version = "0.5.0"
 

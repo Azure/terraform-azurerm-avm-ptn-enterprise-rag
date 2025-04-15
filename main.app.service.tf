@@ -66,10 +66,10 @@ module "web_app_frontend" {
     ORCHESTRATOR_ENDPOINT                 = module.orchestrator_function_app[0].resource_uri
     AZURE_SUBSCRIPTION_ID                 = data.azurerm_client_config.current.subscription_id
     AZURE_RESOURCE_GROUP_NAME             = local.resource_group_name
-    AZURE_ORCHESTRATOR_FUNC_NAME          = provider::azurerm::parse_resource_id(local.orchestrator_function_app_id).resource_name
+    AZURE_ORCHESTRATOR_FUNC_NAME          = local.orchestrator_function_app_parsed.resource_name
     AZURE_KEY_VAULT_ENDPOINT              = local.key_vault_endpoint
-    AZURE_KEY_VAULT_NAME                  = provider::azurerm::parse_resource_id(local.key_vault_id).resource_name
-    STORAGE_ACCOUNT                       = local.storage_account_name
+    AZURE_KEY_VAULT_NAME                  = local.key_vault_parsed.resource_name
+    STORAGE_ACCOUNT                       = local.storage_account_parsed.resource_name
     ENABLE_ORYX_BUILD                     = true
     SCM_DO_BUILD_DURING_DEPLOYMENT        = true
     LOGLEVEL                              = "INFO"

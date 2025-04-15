@@ -24,11 +24,10 @@ module "application_insights" {
   source  = "Azure/avm-res-insights-component/azurerm"
   version = "0.1.5"
 
-  name                = local.resource_names.application_insights_name
-  location            = var.location
-  resource_group_name = local.resource_group_name
-  workspace_id        = local.log_analytics_workspace_id
-
+  name                          = local.resource_names.application_insights_name
+  location                      = var.location
+  resource_group_name           = local.resource_group_name
+  workspace_id                  = local.log_analytics_workspace_id
   application_type              = var.application_insights_type
   local_authentication_disabled = true
   internet_ingestion_enabled    = !var.use_private_networking

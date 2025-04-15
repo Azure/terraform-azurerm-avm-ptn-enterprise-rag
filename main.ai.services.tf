@@ -51,5 +51,5 @@ resource "azurerm_key_vault_secret" "ai_services_key" {
 
   key_vault_id = local.key_vault_id
   name         = each.value
-  value        = local.ai_services_primary_key
+  value        = var.azure_ai_services_create ? module.ai_services[0].primary_key : data.azurerm_cognitive_account.existing[0].primary_key
 }

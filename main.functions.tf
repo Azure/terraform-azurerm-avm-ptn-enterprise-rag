@@ -1,4 +1,6 @@
 module "orchestrator_function_app" {
+  count = var.orchestrator_function_app_create ? 1 : 0
+
   source  = "Azure/avm-res-web-site/azurerm"
   version = "0.15.1"
 
@@ -6,7 +8,7 @@ module "orchestrator_function_app" {
   resource_group_name           = local.resource_group_name
   location                      = var.location
   service_plan_resource_id      = local.app_service_plan_id
-  storage_account_name          = module.orchestrator_storage_account[0].name
+  storage_account_name          = local.orchestrator_function_app_storage_account_parsed.resource_name
   kind                          = "functionapp"
   os_type                       = "Linux"
   enable_application_insights   = false
@@ -23,21 +25,21 @@ module "orchestrator_function_app" {
   app_settings = {
     APPLICATIONINSIGHTS_CONNECTION_STRING = local.application_insights_connection_string
     AzureWebJobsStorage__credential       = "managedidentity"
-    AzureWebJobsStorage__accountName      = module.orchestrator_storage_account[0].name
+    AzureWebJobsStorage__accountName      = local.orchestrator_function_app_storage_account_parsed.resource_name
     AZURE_DB_ID                           = local.cosmos_db_account_id
-    AZURE_DB_NAME                         = ""
+    AZURE_DB_NAME                         = local.cosmos_db_account_parsed.resource_name
     AZURE_DB_CONVERSATIONS_CONTAINER_NAME = ""
     AZURE_DB_DATASOURCES_CONTAINER_NAME   = ""
-    AZURE_KEY_VAULT_NAME                  = provider::azurerm::parse_resource_id(local.key_vault_id).resource_name
+    AZURE_KEY_VAULT_NAME                  = local.key_vault_parsed.resource_name
     AZURE_KEY_VAULT_ENDPOINT              = local.key_vault_endpoint
     FUNCTIONS_WORKER_RUNTIME              = "python"
     FUNCTIONS_EXTENSION_VERSION           = "~4"
-    AZURE_SEARCH_SERVICE                  = provider::azurerm::parse_resource_id(local.ai_search_id).resource_name
-    AZURE_SEARCH_INDEX                    = var.azure_ai_search_index_name
-    AZURE_SEARCH_APPROACH                 = var.azure_ai_search_retrieval_approach
+    AZURE_SEARCH_SERVICE                  = local.ai_search_parsed.resource_name
+    AZURE_SEARCH_INDEX                    = var.ai_search_index_name
+    AZURE_SEARCH_APPROACH                 = var.ai_search_retrieval_approach
     AZURE_SEARCH_USE_SEMANTIC             = var.use_semantic_reranking
-    AZURE_SEARCH_API_VERSION              = var.azure_ai_search_api_version
-    AZURE_OPENAI_RESOURCE                 = provider::azurerm::parse_resource_id(local.azure_open_ai_id).resource_name
+    AZURE_SEARCH_API_VERSION              = var.ai_search_api_version
+    AZURE_OPENAI_RESOURCE                 = local.azure_open_ai_parsed.resource_name
     AZURE_OPENAI_CHATGPT_MODEL            = ""
     AZURE_OPENAI_CHATGPT_DEPLOYMENT       = ""
     AZURE_OPENAI_API_VERSION              = ""
@@ -78,17 +80,25 @@ module "orchestrator_function_app" {
 
 resource "azurerm_role_assignment" "orchestrator_function_app_storage_access" {
   scope                = local.storage_account_id
-  principal_id         = module.orchestrator_function_app[0].identity[0].principal_id
+  principal_id         = var.orchestrator_function_app_create ? module.orchestrator_function_app[0].identity[0].principal_id : data.azurerm_linux_function_app.orchestrator[0].identity[0].principal_id
   role_definition_name = "Storage Blob Data Reader"
 }
 
 resource "azurerm_role_assignment" "orchestrator_function_app_access" {
   scope                = module.orchestrator_storage_account[0].id
-  principal_id         = module.orchestrator_function_app[0].identity[0].principal_id
+  principal_id         = var.orchestrator_function_app_create ? module.orchestrator_function_app[0].identity[0].principal_id : data.azurerm_linux_function_app.orchestrator[0].identity[0].principal_id
   role_definition_name = "Storage Blob Data Contributor"
 }
 
+resource "azurerm_role_assignment" "orchestrator_ai_search_access" {
+  scope                = local.ai_search_id
+  principal_id         = var.orchestrator_function_app_create ? module.orchestrator_function_app[0].identity[0].principal_id : data.azurerm_linux_function_app.orchestrator[0].identity[0].principal_id
+  role_definition_name = "Search Index Data Reader"
+}
+
 module "data_ingestion_function_app" {
+  count = var.data_ingestion_function_app_create ? 1 : 0
+
   source  = "Azure/avm-res-web-site/azurerm"
   version = "0.15.1"
 
@@ -96,7 +106,7 @@ module "data_ingestion_function_app" {
   resource_group_name           = local.resource_group_name
   location                      = var.location
   service_plan_resource_id      = local.app_service_plan_id
-  storage_account_name          = module.data_ingestion_storage_account[0].name
+  storage_account_name          = local.data_ingestion_function_app_storage_account_parsed.resource_name
   kind                          = "functionapp"
   os_type                       = "Linux"
   enable_application_insights   = false
@@ -112,36 +122,36 @@ module "data_ingestion_function_app" {
 
   app_settings = {
     AzureWebJobsStorage__credential   = "managedidentity"
-    AzureWebJobsStorage__accountName  = module.data_ingestion_storage_account[0].name
-    DOCINT_API_VERSION                = ""
-    AZURE_KEY_VAULT_NAME              = provider::azurerm::parse_resource_id(local.key_vault_id).resource_name
+    AzureWebJobsStorage__accountName  = local.data_ingestion_function_app_storage_account_parsed.resource_name
+    DOCINT_API_VERSION                = var.document_intelligence_api_version
+    AZURE_KEY_VAULT_NAME              = local.key_vault_parsed.resource_name
     AZURE_KEY_VAULT_ENDPOINT          = local.key_vault_endpoint
     FUNCTION_APP_NAME                 = local.resource_names.data_ingestion_function_app_name
     FUNCTIONS_WORKER_RUNTIME          = "python"
     FUNCTIONS_EXTENSION_VERSION       = "~4"
-    SEARCH_INDEX_NAME                 = var.azure_ai_search_index_name
-    SEARCH_ANALYZER_NAME              = var.azure_ai_search_analyzer_name
-    SEARCH_API_VERSION                = var.azure_ai_search_api_version
-    SEARCH_INDEX_INTERVAL             = var.azure_ai_search_index_interval
-    STORAGE_ACCOUNT_NAME              = ""
-    STORAGE_CONTAINER                 = ""
-    STORAGE_CONTAINER_IMAGES          = ""
-    AZURE_FORMREC_SERVICE             = local.ai_services_name
-    AZURE_OPENAI_API_VERSION          = ""
-    AZURE_SEARCH_APPROACH             = var.azure_ai_search_retrieval_approach
-    AZURE_SEARCH_SERVICE              = provider::azurerm::parse_resource_id(local.ai_search_id).resource_name
-    AZURE_SEARCH_INDEX_NAME           = var.azure_ai_search_index_name
-    AZURE_OPENAI_SERVICE_NAME         = ""
-    AZURE_OPENAI_EMBEDDING_DEPLOYMENT = ""
-    AZURE_EMBEDDINGS_VECTOR_SIZE      = ""
-    AZURE_OPENAI_EMBEDDING_MODEL      = ""
-    AZURE_OPENAI_CHATGPT_DEPLOYMENT   = ""
-    NUM_TOKENS                        = ""
-    MIN_CHUNK_SIZE                    = ""
-    TOKEN_OVERLAP                     = ""
+    SEARCH_INDEX_NAME                 = var.ai_search_index_name
+    SEARCH_ANALYZER_NAME              = var.ai_search_analyzer_name
+    SEARCH_API_VERSION                = var.ai_search_api_version
+    SEARCH_INDEX_INTERVAL             = var.ai_search_index_interval
+    STORAGE_ACCOUNT_NAME              = local.storage_account_parsed.resource_name
+    STORAGE_CONTAINER                 = var.storage_account_create ? local.resource_names.storage_account_container_documents_name : null # TODO: BYO Storage & Containers
+    STORAGE_CONTAINER_IMAGES          = var.storage_account_create ? local.resource_names.storage_account_container_images_name : null    # TODO: BYO Storage & Containers
+    AZURE_FORMREC_SERVICE             = local.ai_services_parsed.resource_name
+    AZURE_OPENAI_API_VERSION          = var.openai_api_version
+    AZURE_SEARCH_APPROACH             = var.ai_search_retrieval_approach
+    AZURE_SEARCH_SERVICE              = local.ai_search_parsed.resource_name
+    AZURE_SEARCH_INDEX_NAME           = var.ai_search_index_name
+    AZURE_OPENAI_SERVICE_NAME         = local.azure_open_ai_parsed.resource_name
+    AZURE_OPENAI_EMBEDDING_DEPLOYMENT = var.embeddings_deployment_name
+    AZURE_EMBEDDINGS_VECTOR_SIZE      = var.embeddings_vector_size
+    AZURE_OPENAI_EMBEDDING_MODEL      = var.embeddings_model_name
+    AZURE_OPENAI_CHATGPT_DEPLOYMENT   = var.chat_gpt_deployment_name
+    NUM_TOKENS                        = var.chunk_num_tokens
+    MIN_CHUNK_SIZE                    = var.chunk_min_size
+    TOKEN_OVERLAP                     = var.chunk_token_overlap
     NETWORK_ISOLATION                 = var.use_private_networking
-    AZURE_STORAGE_ACCOUNT_RG          = ""
-    AZURE_AOAI_RG                     = ""
+    AZURE_STORAGE_ACCOUNT_RG          = local.storage_account_parsed.resource_group_name
+    AZURE_AOAI_RG                     = local.azure_open_ai_parsed.resource_group_name
     ENABLE_ORYX_BUILD                 = true
     SCM_DO_BUILD_DURING_DEPLOYMENT    = true
     AzureWebJobsFeatureFlags          = "EnableWorkerIndexing"
@@ -172,4 +182,9 @@ module "data_ingestion_function_app" {
   } : null
 }
 
-# TODO: Identities & Permissions
+
+resource "azurerm_role_assignment" "data_ingestion_ai_search_access" {
+  scope                = local.ai_search_id
+  principal_id         = var.data_ingestion_function_app_create ? module.data_ingestion_function_app[0].identity[0].principal_id : data.azurerm_linux_function_app.data_ingestion[0].identity[0].principal_id
+  role_definition_name = "Search Index Data Contributor"
+}

@@ -10,39 +10,60 @@ data "http" "ip" {
 }
 
 data "azurerm_subnet" "bastion" {
-  count = var.use_private_networking ? 1 : 0
+  count = var.bastion_host_create ? 1 : 0
 
   name                 = "AzureBastionSubnet"
-  virtual_network_name = provider::azurerm::parse_resource_id(local.virtual_network_id).resource_name
-  resource_group_name  = provider::azurerm::parse_resource_id(local.virtual_network_id).resource_group_name
+  virtual_network_name = local.virtual_network_parsed.resource_name
+  resource_group_name  = local.virtual_network_parsed.resource_group_name
 
   depends_on = [module.virtual_network] # dynamically retrieves AzureBastionSubnet if created or using existing
 }
 
-data "azurerm_search_service" "this" {
-  count = !var.azure_ai_search_create ? 1 : 0
+data "azurerm_search_service" "existing" {
+  count = !var.ai_search_create ? 1 : 0
 
-  name                = provider::azurerm::parse_resource_id(var.azure_ai_search_id).resource_name
-  resource_group_name = provider::azurerm::parse_resource_id(var.azure_ai_search_id).resource_group_name
+  name                = local.ai_search_parsed.resource_name
+  resource_group_name = local.ai_search_parsed.resource_group_name
 }
 
-data "azurerm_key_vault" "this" {
+data "azurerm_linux_function_app" "orchestrator" {
+  count = !var.orchestrator_function_app_create ? 1 : 0
+
+  name                = local.orchestrator_function_app_parsed.resource_name
+  resource_group_name = local.orchestrator_function_app_parsed.resource_group_name
+}
+
+data "azurerm_linux_function_app" "data_ingestion" {
+  count = !var.data_ingestion_function_app_create ? 1 : 0
+
+  name                = local.data_ingestion_function_app_parsed.resource_name
+  resource_group_name = local.data_ingestion_function_app_parsed.resource_group_name
+}
+
+data "azurerm_key_vault" "existing" {
   count = !var.key_vault_create ? 1 : 0
 
-  name                = provider::azurerm::parse_resource_id(var.key_vault_id).resource_name
-  resource_group_name = provider::azurerm::parse_resource_id(var.key_vault_id).resource_group_name
+  name                = local.key_vault_parsed.resource_name
+  resource_group_name = local.key_vault_parsed.resource_group_name
 }
 
-data "azurerm_application_insights" "this" {
+data "azurerm_application_insights" "existing" {
   count = !var.application_insights_create ? 1 : 0
 
-  name                = provider::azurerm::parse_resource_id(var.application_insights_id).resource_name
-  resource_group_name = provider::azurerm::parse_resource_id(var.application_insights_id).resource_group_name
+  name                = local.application_insights_parsed.resource_name
+  resource_group_name = local.application_insights_parsed.resource_group_name
 }
 
-data "azurerm_cognitive_account" "this" {
+data "azurerm_cognitive_account" "existing" {
   count = !var.azure_ai_services_create ? 1 : 0
 
-  name                = provider::azurerm::parse_resource_id(var.azure_ai_services_id).resource_name
-  resource_group_name = provider::azurerm::parse_resource_id(var.azure_ai_services_id).resource_group_name
+  name                = local.ai_services_parsed.resource_name
+  resource_group_name = local.ai_services_parsed.resource_group_name
+}
+
+data "azurerm_cosmosdb_account" "existing" {
+  count = !var.cosmos_db_create ? 1 : 0
+
+  name                = local.cosmos_db_account_parsed.resource_name
+  resource_group_name = local.cosmos_db_account_parsed.resource_group_name
 }
