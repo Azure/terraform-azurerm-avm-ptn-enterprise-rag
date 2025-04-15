@@ -85,3 +85,9 @@ module "cosmos_db" {
     }
   } : null
 }
+
+# resource "azurerm_role_assignment" "orchestrator_cosmos_db_access" {
+#   scope = local.cosmos_db_account_id
+#   principal_id = module.orchestrator_function_app[0].identity[0].principal_id
+#   role_definition_name = "Storage Blob Data Reader"
+# }

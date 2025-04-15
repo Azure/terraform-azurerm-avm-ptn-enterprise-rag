@@ -47,6 +47,7 @@ module "virtual_machine" {
 
 # The VM's Managed Identity is granted access to create AI Search indexes and indexers for convenience, as the role is also assigned to the provisioning identity afterward.
 resource "azurerm_role_assignment" "dvsm" {
-  scope = local.ai_search_id 
-  principal_id = module.virtual_machine[0].identity[0].principal_id
+  scope                = local.ai_search_id
+  principal_id         = module.virtual_machine[0].identity[0].principal_id
+  role_definition_name = "Search Service Contributor"
 }

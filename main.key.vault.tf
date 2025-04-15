@@ -61,7 +61,7 @@ module "key_vault_bastion" {
   location                      = var.location
   resource_group_name           = local.resource_group_name
   tenant_id                     = data.azurerm_client_config.current.tenant_id
-  public_network_access_enabled = true
+  public_network_access_enabled = !var.use_private_networking
 
   role_assignments = {
     deployment_user_secrets = {
@@ -79,3 +79,5 @@ module "key_vault_bastion" {
   tags             = var.tags
   enable_telemetry = var.enable_telemetry
 }
+
+# TODO: Permissions

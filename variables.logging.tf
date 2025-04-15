@@ -22,12 +22,6 @@ variable "log_analytics_workspace_retention_in_days" {
   description = "The retention period in days for the Log Analytics Workspace."
 }
 
-variable "application_insights_type" {
-  type        = string
-  default     = "web"
-  description = "The type of Application Insights resource to create."
-}
-
 variable "application_insights_create" {
   type        = bool
   default     = true
@@ -38,4 +32,10 @@ variable "application_insights_id" {
   type        = string
   default     = null
   description = "The ID of the existing Application Insights resource."
+}
+
+variable "application_insights_type" {
+  type        = string
+  default     = "web"
+  description = "The type of Application Insights resource to create."
 }

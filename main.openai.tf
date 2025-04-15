@@ -45,3 +45,9 @@ module "azure_open_ai" {
 
 # TODO: Deployments
 # TODO: Secrets
+
+resource "azurerm_role_assignment" "orchestrator_function_app_open_ai_access" {
+  scope                = local.cosmos_db_account_id
+  principal_id         = module.orchestrator_function_app[0].identity[0].principal_id
+  role_definition_name = "Cognitive Services OpenAI User"
+}

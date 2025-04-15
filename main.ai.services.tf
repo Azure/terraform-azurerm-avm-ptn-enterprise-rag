@@ -35,12 +35,21 @@ module "ai_services" {
 
   private_endpoints = var.use_private_networking ? {
     primary = {
+      name                          = local.resource_names.azure_ai_services_private_endpoint_name
       private_dns_zone_resource_ids = var.use_private_networking && var.virtual_network_create ? [module.private_dns_zone_ai_services[0].resource_id] : [] # What if users want to reuse private dns zones?
       subnet_resource_id            = module.virtual_network[0].subnets["01_ai"].resource_id
       subresource_name              = "account"
       tags                          = var.tags
     }
   } : null
+
+  # TODO: Deployments?
 }
 
-# TODO: Secrets
+resource "azurerm_key_vault_secret" "ai_services_key" {
+  for_each = toset(["formRecKey", "speechKey"])
+
+  key_vault_id = local.key_vault_id
+  name         = each.value
+  value        = local.ai_services_primary_key
+}
