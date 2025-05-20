@@ -1,116 +1,131 @@
-module "private_dns_zone_storage" {
-  count = var.use_private_networking && var.virtual_network_create ? 1 : 0
-
-  source  = "Azure/avm-res-network-privatednszone/azurerm"
-  version = "0.3.2"
-
-  resource_group_name = local.resource_group_name
-  domain_name         = "privatelink.blob.core.windows.net"
-
-  virtual_network_links = {
-    primary = {
-      vnetlinkname = "storage-account"
-      vnetid       = local.virtual_network_id
-    }
-  }
-
-  tags             = var.tags
-  enable_telemetry = var.enable_telemetry
-}
-
-module "storage_account" {
-  count = var.storage_account_create ? 1 : 0
+module "document_storage_account" {
+  count = var.document_storage_account_create ? 1 : 0
 
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
   version = "0.5.0"
 
-  name                = local.resource_names.storage_account_name
-  resource_group_name = local.resource_group_name
-  location            = var.location
-
-  public_network_access_enabled = !var.use_private_networking
+  name                                    = local.resource_names.document_storage_account_name
+  resource_group_name                     = local.resource_group_name
+  location                                = var.location
+  access_tier                             = try(var.document_storage_account.access_tier, "Hot")
+  account_kind                            = try(var.document_storage_account.account_kind, "StorageV2")
+  account_replication_type                = try(var.document_storage_account.account_replication_type, "LRS")
+  account_tier                            = try(var.document_storage_account.account_tier, "Standard")
+  allow_nested_items_to_be_public         = try(var.document_storage_account.allow_nested_items_to_be_public, false)
+  allowed_copy_scope                      = try(var.document_storage_account.allowed_copy_scope, null)
+  cross_tenant_replication_enabled        = try(var.document_storage_account.cross_tenant_replication_enabled, true)
+  custom_domain                           = try(var.document_storage_account.custom_domain, null)
+  https_traffic_only_enabled              = try(var.document_storage_account.https_traffic_only_enabled, true)
+  shared_access_key_enabled               = try(var.document_storage_account.shared_access_key_enabled, false)
+  infrastructure_encryption_enabled       = try(var.document_storage_account.infrastructure_encryption_enabled, false)
+  min_tls_version                         = try(var.document_storage_account.min_tls_version, "TLS1_2")
+  default_to_oauth_authentication         = try(var.document_storage_account.default_to_oauth_authentication, false)
+  diagnostic_settings_storage_account     = try(var.document_storage_account.diagnostic_settings, null)
+  diagnostic_settings_blob                = try(var.document_storage_account.diagnostic_settings_blob, null)
+  diagnostic_settings_file                = try(var.document_storage_account.diagnostic_settings_file, null)
+  network_rules                           = try(var.document_storage_account.network_rules, null)
+  routing                                 = try(var.document_storage_account.routing, null)
+  public_network_access_enabled           = !var.use_private_networking
+  private_endpoints_manage_dns_zone_group = try(var.document_storage_account.private_endpoints_manage_dns_zone_group, null)
+  private_endpoints                       = var.use_private_networking ? { for key, value in var.document_storage_account.private_endpoints : key => merge(value, { subresource_name = "blob" }) } : null
+  role_assignments                        = try(var.document_storage_account.role_assignments, null)
 
   containers = {
     documents = {
-      name = local.resource_names.storage_account_container_documents_name
+      name = "document"
     }
     images = {
-      name = local.resource_names.storage_account_container_images_name
+      name = "document-images"
     }
     nl2sql = {
-      name = local.resource_names.storage_account_container_nl2sql_name
+      name = "nl2sql"
     }
-  }
+  } # TODO: Does this need customizing?
 
-  private_endpoints = var.use_private_networking ? {
-    primary = {
-      private_dns_zone_resource_ids = var.use_private_networking && var.storage_account_create ? [module.private_dns_zone_storage[0].resource_id] : []
-      subnet_resource_id            = module.virtual_network[0].subnets["01_ai"].resource_id # TODO: Dynamically fetch subnet res ID
-      subresource_name              = "blob"
-      tags                          = var.tags
-    }
-  } : null
-
-  tags             = var.tags
+  tags             = merge(var.tags, try(var.document_storage_account.tags, {}))
   enable_telemetry = var.enable_telemetry
 }
 
-module "orchestrator_fa_storage_account" {
-  count = var.orchestrator_function_app_storage_account_create ? 1 : 0
+module "orchestrator_storage_account" {
+  count = var.orchestrator_storage_account_create ? 1 : 0
 
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
   version = "0.5.0"
 
-  name                          = local.resource_names.orchestrator_function_app_storage_account_name
-  resource_group_name           = local.resource_group_name
-  location                      = var.location
-  public_network_access_enabled = !var.use_private_networking
+  name                                    = local.resource_names.orchestrator_storage_account_name
+  resource_group_name                     = local.resource_group_name
+  location                                = var.location
+  access_tier                             = try(var.orchestrator_storage_account.access_tier, "Hot")
+  account_kind                            = try(var.orchestrator_storage_account.account_kind, "StorageV2")
+  account_replication_type                = try(var.orchestrator_storage_account.account_replication_type, "LRS")
+  account_tier                            = try(var.orchestrator_storage_account.account_tier, "Standard")
+  allow_nested_items_to_be_public         = try(var.orchestrator_storage_account.allow_nested_items_to_be_public, false)
+  allowed_copy_scope                      = try(var.orchestrator_storage_account.allowed_copy_scope, null)
+  cross_tenant_replication_enabled        = try(var.orchestrator_storage_account.cross_tenant_replication_enabled, true)
+  custom_domain                           = try(var.orchestrator_storage_account.custom_domain, null)
+  https_traffic_only_enabled              = try(var.orchestrator_storage_account.https_traffic_only_enabled, true)
+  shared_access_key_enabled               = false
+  infrastructure_encryption_enabled       = try(var.orchestrator_storage_account.infrastructure_encryption_enabled, false)
+  min_tls_version                         = try(var.orchestrator_storage_account.min_tls_version, "TLS1_2")
+  default_to_oauth_authentication         = try(var.orchestrator_storage_account.default_to_oauth_authentication, false)
+  diagnostic_settings_storage_account     = try(var.orchestrator_storage_account.diagnostic_settings, null)
+  diagnostic_settings_blob                = try(var.orchestrator_storage_account.diagnostic_settings_blob, null)
+  diagnostic_settings_file                = try(var.orchestrator_storage_account.diagnostic_settings_file, null)
+  network_rules                           = try(var.orchestrator_storage_account.network_rules, null)
+  routing                                 = try(var.orchestrator_storage_account.routing, null)
+  public_network_access_enabled           = !var.use_private_networking
+  private_endpoints_manage_dns_zone_group = try(var.orchestrator_storage_account.private_endpoints_manage_dns_zone_group, null)
+  private_endpoints                       = var.use_private_networking ? { for key, value in var.orchestrator_storage_account.private_endpoints : key => merge(value, { subresource_name = "blob" }) } : null
+  role_assignments                        = try(var.orchestrator_storage_account.role_assignments, null)
 
   containers = {
-    orchestrator = {
+    deploymentpackage = {
       name = "deploymentpackage"
     }
   }
 
-  private_endpoints = var.use_private_networking ? {
-    primary = {
-      private_dns_zone_resource_ids = var.use_private_networking && var.virtual_network_create ? [module.private_dns_zone_storage[0].resource_id] : []
-      subnet_resource_id            = module.virtual_network[0].subnets["01_ai"].resource_id
-      subresource_name              = "blob"
-      tags                          = var.tags
-    }
-  } : null
-
-  tags             = var.tags
+  tags             = merge(var.tags, try(var.orchestrator_storage_account.tags, {}))
   enable_telemetry = var.enable_telemetry
 }
 
-module "data_ingestion_fa_storage_account" {
-  count = var.data_ingestion_function_app_storage_account_create ? 1 : 0
+module "data_ingestion_storage_account" {
+  count = var.data_ingestion_storage_account_create ? 1 : 0
 
   source  = "Azure/avm-res-storage-storageaccount/azurerm"
   version = "0.5.0"
 
-  name                          = local.resource_names.data_ingestion_function_app_storage_account_name
-  resource_group_name           = local.resource_group_name
-  location                      = var.location
-  public_network_access_enabled = !var.use_private_networking
+  name                                    = local.resource_names.data_ingestion_storage_account_name
+  resource_group_name                     = local.resource_group_name
+  location                                = var.location
+  access_tier                             = try(var.data_ingestion_storage_account.access_tier, "Hot")
+  account_kind                            = try(var.data_ingestion_storage_account.account_kind, "StorageV2")
+  account_replication_type                = try(var.data_ingestion_storage_account.account_replication_type, "LRS")
+  account_tier                            = try(var.data_ingestion_storage_account.account_tier, "Standard")
+  allow_nested_items_to_be_public         = try(var.data_ingestion_storage_account.allow_nested_items_to_be_public, false)
+  allowed_copy_scope                      = try(var.data_ingestion_storage_account.allowed_copy_scope, null)
+  cross_tenant_replication_enabled        = try(var.data_ingestion_storage_account.cross_tenant_replication_enabled, true)
+  custom_domain                           = try(var.data_ingestion_storage_account.custom_domain, null)
+  https_traffic_only_enabled              = try(var.data_ingestion_storage_account.https_traffic_only_enabled, true)
+  shared_access_key_enabled               = false
+  infrastructure_encryption_enabled       = try(var.data_ingestion_storage_account.infrastructure_encryption_enabled, false)
+  min_tls_version                         = try(var.data_ingestion_storage_account.min_tls_version, "TLS1_2")
+  default_to_oauth_authentication         = try(var.data_ingestion_storage_account.default_to_oauth_authentication, false)
+  diagnostic_settings_storage_account     = try(var.data_ingestion_storage_account.diagnostic_settings, null)
+  diagnostic_settings_blob                = try(var.data_ingestion_storage_account.diagnostic_settings_blob, null)
+  diagnostic_settings_file                = try(var.data_ingestion_storage_account.diagnostic_settings_file, null)
+  network_rules                           = try(var.data_ingestion_storage_account.network_rules, null)
+  routing                                 = try(var.data_ingestion_storage_account.routing, null)
+  public_network_access_enabled           = !var.use_private_networking
+  private_endpoints_manage_dns_zone_group = try(var.data_ingestion_storage_account.private_endpoints_manage_dns_zone_group, null)
+  private_endpoints                       = var.use_private_networking ? { for key, value in var.data_ingestion_storage_account.private_endpoints : key => merge(value, { subresource_name = "blob" }) } : null
+  role_assignments                        = try(var.data_ingestion_storage_account.role_assignments, null)
 
   containers = {
-    orchestrator = {
+    deploymentpackage = {
       name = "deploymentpackage"
     }
   }
 
-  private_endpoints = var.use_private_networking ? {
-    primary = {
-      private_dns_zone_resource_ids = var.use_private_networking && var.virtual_network_create ? [module.private_dns_zone_storage[0].resource_id] : []
-      subnet_resource_id            = module.virtual_network[0].subnets["01_ai"].resource_id
-      subresource_name              = "blob"
-      tags                          = var.tags
-    }
-  } : null
-
-  tags             = var.tags
+  tags             = merge(var.tags, try(var.data_ingestion_storage_account.tags, {}))
   enable_telemetry = var.enable_telemetry
 }

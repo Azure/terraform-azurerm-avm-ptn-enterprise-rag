@@ -4,5 +4,6 @@ resource "azurerm_load_test" "this" {
   name                = local.resource_names.load_testing_name
   location            = var.location
   resource_group_name = local.resource_group_name
-  description         = var.load_testing_description
+  description         = var.load_testing.description
+  tags                = merge(var.tags, try(var.load_testing.tags, null))
 }

@@ -1,6 +1,12 @@
-module "subnet_address_prefixes" {
-  count = var.use_private_networking ? 1 : 0
+locals {
+  subnets = { for key, value in var.virtual_network_subnets : key => {
+    name             = value.name
+    address_prefixes = [module.subnet_address_prefixes.address_prefixes[key]]
+    }
+  }
+}
 
+module "subnet_address_prefixes" {
   source  = "Azure/avm-utl-network-ip-addresses/azurerm"
   version = "0.1.0"
 
@@ -10,16 +16,14 @@ module "subnet_address_prefixes" {
 }
 
 module "virtual_network" {
-  count = var.use_private_networking && var.virtual_network_create ? 1 : 0
-
   source  = "Azure/avm-res-network-virtualnetwork/azurerm"
   version = "0.8.1"
 
-  name                = local.resource_names.virtual_network_name
-  location            = var.location
-  resource_group_name = local.resource_group_name
+  name                = module.naming.virtual_network.name_unique
+  location            = azurerm_resource_group.this.location
+  resource_group_name = azurerm_resource_group.this.name
   address_space       = var.virtual_network_address_space
   subnets             = local.subnets
-  tags                = var.tags
   enable_telemetry    = var.enable_telemetry
 }
+
