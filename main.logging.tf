@@ -1,3 +1,11 @@
+locals {
+  application_insights_id = var.application_insights_create ? module.application_insights[0].resource_id : var.application_insights_id
+  # application_insights_parsed            = provider::azurerm::parse_resource_id(local.application_insights_id)
+  # application_insights_key               = var.application_insights_create ? module.application_insights[0].instrumentation_key : data.azurerm_application_insights.existing[0].instrumentation_key
+  # application_insights_connection_string = var.application_insights_create ? module.application_insights[0].connection_string : data.azurerm_application_insights.existing[0].connection_string
+  log_analytics_workspace_id = var.log_analytics_workspace_create ? module.log_analytics_workspace[0].resource_id : var.log_analytics_workspace_id
+}
+
 module "application_insights" {
   count = var.application_insights_create ? 1 : 0
 

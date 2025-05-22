@@ -20,6 +20,7 @@ provider "azurerm" {
   features {}
 
   storage_use_azuread = true
+  subscription_id     = "283a6647-52dd-40ea-bbf6-68096a8755b8"
 }
 
 data "azurerm_client_config" "current" {}
@@ -59,127 +60,9 @@ module "test" {
   resource_group_create = false
   resource_group_name   = azurerm_resource_group.this.name # keep all supporting services in the same resource group
 
-  ai_search = {
-    private_endpoints = {
-      primary = {
-        subnet_resource_id = module.virtual_network.subnets["01_ai"].resource_id
-        private_dns_zone_resource_ids = [
-          module.private_dns_zone_ai_search.resource_id,
-        ]
-      }
-    }
-  }
-
-  ai_service = {
-    custom_subdomain_name = "rhysaiservice"
-    private_endpoints = {
-      primary = {
-        subnet_resource_id = module.virtual_network.subnets["01_ai"].resource_id
-        private_dns_zone_resource_ids = [
-          module.private_dns_zone_cognitive_services.resource_id,
-          module.private_dns_zone_open_ai.resource_id,
-          module.private_dns_zone_ai_services.resource_id
-        ]
-      }
-    }
-  }
-
-  azure_open_ai = {
-    custom_subdomain_name = "rhysopenai"
-    private_endpoints = {
-      primary = {
-        subnet_resource_id = module.virtual_network.subnets["01_ai"].resource_id
-        private_dns_zone_resource_ids = [
-          module.private_dns_zone_open_ai.resource_id
-        ]
-      }
-    }
-
-    deployments = {
-      gpt-4o-mini = {
-        name = "gpt-4o-mini"
-        model = {
-          format  = "OpenAI"
-          name    = "gpt-4o-mini"
-          version = "2024-07-18"
-        }
-        scale = {
-          type = "Standard"
-        }
-      }
-    }
-  }
-
-  key_vault = {
-    role_assignments = {
-      deployment_secrets = {
-        role_definition_id_or_name = "Key Vault Administrator"
-        principal_id               = data.azurerm_client_config.current.object_id
-      }
-    }
-    private_endpoints = {
-      primary = {
-        subnet_resource_id = module.virtual_network.subnets["01_ai"].resource_id
-        private_dns_zone_resource_ids = [
-          module.private_dns_zone_key_vault.resource_id
-        ]
-      }
-    }
-  }
-
-  document_storage_account = {
-    private_endpoints = {
-      primary = {
-        subnet_resource_id = module.virtual_network.subnets["01_ai"].resource_id
-        private_dns_zone_resource_ids = [
-          module.private_dns_zone_storage.resource_id
-        ]
-      }
-    }
-  }
-
-  data_ingestion_storage_account = {
-    private_endpoints = {
-      primary = {
-        subnet_resource_id = module.virtual_network.subnets["01_ai"].resource_id
-        private_dns_zone_resource_ids = [
-          module.private_dns_zone_storage.resource_id
-        ]
-      }
-    }
-  }
-
-  orchestrator_storage_account = {
-    private_endpoints = {
-      primary = {
-        subnet_resource_id = module.virtual_network.subnets["01_ai"].resource_id
-        private_dns_zone_resource_ids = [
-          module.private_dns_zone_storage.resource_id
-        ]
-      }
-    }
-  }
-
-  application_insights_create = true
-  log_analytics_workspace_create = true
-  log_analytics_workspace = {
-    monitor_private_link_scope = {
-      primary = {
-        resource_id = azurerm_resource_group.this.id
-      }
-    }
-    monitor_private_link_scoped_service_name = "GPT-RAG"
-    private_endpoints = {
-      primary = {
-        subnet_resource_id = module.virtual_network.subnets["01_ai"].resource_id
-        private_dns_zone_resource_ids = [
-          module.private_dns_zone_log_analytics.resource_id
-        ]
-      }
-    }
-  }
-
-  app_service_plan_create = false
+  ai_subnet_id           = module.virtual_network.subnets["01_ai"].resource_id
+  app_services_subnet_id = module.virtual_network.subnets["03_app_service"].resource_id
+  database_subnet_id     = module.virtual_network.subnets["04_database"].resource_id
 }
 
 # Original Issues

@@ -30,11 +30,6 @@ variable "log_analytics_workspace" {
   default     = {}
   description = "Log Analytics resource to be created for Application Insights. For details concerning inputs, see "
   nullable    = false
-
-  validation {
-    condition     = !(var.use_private_networking) || (length(var.log_analytics_workspace.private_endpoints) > 0)
-    error_message = "If use_private_networking is true, you must define private endpoints."
-  }
 }
 
 variable "log_analytics_workspace_id" {
@@ -42,4 +37,8 @@ variable "log_analytics_workspace_id" {
   default     = null
   description = "The ID of the existing Log Analytics Workspace to use. Only required if `log_analytics_workspace_create` is set to false."
 
+  validation {
+    condition     = var.log_analytics_workspace_create || (var.log_analytics_workspace_id != null)
+    error_message = "If log_analytics_workspace_create is false, you must provide an existing log_analytics_workspace_id."
+  }
 }

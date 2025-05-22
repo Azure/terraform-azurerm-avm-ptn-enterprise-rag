@@ -19,12 +19,19 @@ data "http" "ip" {
 #   depends_on = [module.virtual_network] # dynamically retrieves AzureBastionSubnet if created or using existing
 # }
 
-# data "azurerm_search_service" "existing" {
-#   count = !var.ai_search.create ? 1 : 0
+data "azurerm_search_service" "existing" {
+  count = !var.ai_search.create ? 1 : 0
 
-#   name                = local.ai_search_parsed.resource_name
-#   resource_group_name = local.ai_search_parsed.resource_group_name
-# }
+  name                = local.ai_search_parsed.resource_name
+  resource_group_name = local.ai_search_parsed.resource_group_name
+}
+
+data "azurerm_cognitive_account" "existing" {
+  count = !var.azure_open_ai_create ? 1 : 0
+
+  name                = local.azure_open_ai_parsed.resource_name
+  resource_group_name = local.azure_open_ai_parsed.resource_group_name
+}
 
 # data "azurerm_linux_function_app" "orchestrator" {
 #   count = !var.orchestrator_function_app_create ? 1 : 0
@@ -40,25 +47,18 @@ data "http" "ip" {
 #   resource_group_name = local.data_ingestion_function_app_parsed.resource_group_name
 # }
 
-# data "azurerm_key_vault" "existing" {
-#   count = !var.key_vault_create ? 1 : 0
+data "azurerm_key_vault" "existing" {
+  count = !var.key_vault_create ? 1 : 0
 
-#   name                = local.key_vault_parsed.resource_name
-#   resource_group_name = local.key_vault_parsed.resource_group_name
-# }
+  name                = local.key_vault_parsed.resource_name
+  resource_group_name = local.key_vault_parsed.resource_group_name
+}
 
 # data "azurerm_application_insights" "existing" {
 #   count = !var.application_insights_create ? 1 : 0
 
 #   name                = local.application_insights_parsed.resource_name
 #   resource_group_name = local.application_insights_parsed.resource_group_name
-# }
-
-# data "azurerm_cognitive_account" "existing" {
-#   count = !var.ai_service_create ? 1 : 0
-
-#   name                = local.ai_service_parsed.resource_name
-#   resource_group_name = local.ai_service_parsed.resource_group_name
 # }
 
 # data "azurerm_cosmosdb_account" "existing" {

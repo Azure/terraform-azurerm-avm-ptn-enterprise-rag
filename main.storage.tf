@@ -1,3 +1,12 @@
+locals {
+  orchestrator_storage_account_id       = var.orchestrator_storage_account_create ? module.orchestrator_storage_account[0].resource_id : var.orchestrator_storage_account_id
+  orchestrator_storage_account_parsed   = provider::azurerm::parse_resource_id(local.orchestrator_storage_account_id)
+  data_ingestion_storage_account_id     = var.data_ingestion_storage_account_create ? module.data_ingestion_storage_account[0].resource_id : var.data_ingestion_storage_account_id
+  data_ingestion_storage_account_parsed = provider::azurerm::parse_resource_id(local.data_ingestion_storage_account_id)
+  document_storage_account_id           = var.document_storage_account_create ? module.document_storage_account[0].resource_id : var.document_storage_account_id
+  document_storage_account_parsed       = provider::azurerm::parse_resource_id(local.document_storage_account_id)
+}
+
 module "document_storage_account" {
   count = var.document_storage_account_create ? 1 : 0
 
@@ -27,7 +36,6 @@ module "document_storage_account" {
   routing                                 = try(var.document_storage_account.routing, null)
   public_network_access_enabled           = !var.use_private_networking
   private_endpoints_manage_dns_zone_group = try(var.document_storage_account.private_endpoints_manage_dns_zone_group, null)
-  private_endpoints                       = var.use_private_networking ? { for key, value in var.document_storage_account.private_endpoints : key => merge(value, { subresource_name = "blob" }) } : null
   role_assignments                        = try(var.document_storage_account.role_assignments, null)
 
   containers = {
@@ -40,10 +48,20 @@ module "document_storage_account" {
     nl2sql = {
       name = "nl2sql"
     }
-  } # TODO: Does this need customizing?
+  } # TODO: Do users need to customize this?
 
   tags             = merge(var.tags, try(var.document_storage_account.tags, {}))
   enable_telemetry = var.enable_telemetry
+
+  private_endpoints = var.use_private_networking ? {
+    primary = {
+      name = local.resource_names.document_storage_account_private_endpoint_name
+      # private_dns_zone_resource_ids = var.use_private_networking ? [module.private_dns_zone_ai_search[0].resource_id] : []
+      subnet_resource_id = var.ai_subnet_id
+      subresource_name   = "blob"
+      tags               = var.tags
+    }
+  } : null
 }
 
 module "orchestrator_storage_account" {
@@ -75,8 +93,9 @@ module "orchestrator_storage_account" {
   routing                                 = try(var.orchestrator_storage_account.routing, null)
   public_network_access_enabled           = !var.use_private_networking
   private_endpoints_manage_dns_zone_group = try(var.orchestrator_storage_account.private_endpoints_manage_dns_zone_group, null)
-  private_endpoints                       = var.use_private_networking ? { for key, value in var.orchestrator_storage_account.private_endpoints : key => merge(value, { subresource_name = "blob" }) } : null
   role_assignments                        = try(var.orchestrator_storage_account.role_assignments, null)
+  tags                                    = merge(var.tags, try(var.orchestrator_storage_account.tags, {}))
+  enable_telemetry                        = var.enable_telemetry
 
   containers = {
     deploymentpackage = {
@@ -84,8 +103,15 @@ module "orchestrator_storage_account" {
     }
   }
 
-  tags             = merge(var.tags, try(var.orchestrator_storage_account.tags, {}))
-  enable_telemetry = var.enable_telemetry
+  private_endpoints = var.use_private_networking ? {
+    primary = {
+      name = local.resource_names.orchestrator_storage_account_private_endpoint_name
+      # private_dns_zone_resource_ids = var.use_private_networking ? [module.private_dns_zone_ai_search[0].resource_id] : []
+      subnet_resource_id = var.ai_subnet_id
+      subresource_name   = "blob"
+      tags               = var.tags
+    }
+  } : null
 }
 
 module "data_ingestion_storage_account" {
@@ -117,8 +143,9 @@ module "data_ingestion_storage_account" {
   routing                                 = try(var.data_ingestion_storage_account.routing, null)
   public_network_access_enabled           = !var.use_private_networking
   private_endpoints_manage_dns_zone_group = try(var.data_ingestion_storage_account.private_endpoints_manage_dns_zone_group, null)
-  private_endpoints                       = var.use_private_networking ? { for key, value in var.data_ingestion_storage_account.private_endpoints : key => merge(value, { subresource_name = "blob" }) } : null
   role_assignments                        = try(var.data_ingestion_storage_account.role_assignments, null)
+  tags                                    = merge(var.tags, try(var.data_ingestion_storage_account.tags, {}))
+  enable_telemetry                        = var.enable_telemetry
 
   containers = {
     deploymentpackage = {
@@ -126,6 +153,13 @@ module "data_ingestion_storage_account" {
     }
   }
 
-  tags             = merge(var.tags, try(var.data_ingestion_storage_account.tags, {}))
-  enable_telemetry = var.enable_telemetry
+  private_endpoints = var.use_private_networking ? {
+    primary = {
+      name = local.resource_names.data_ingestion_storage_account_private_endpoint_name
+      # private_dns_zone_resource_ids = var.use_private_networking ? [module.private_dns_zone_ai_search[0].resource_id] : []
+      subnet_resource_id = var.ai_subnet_id
+      subresource_name   = "blob"
+      tags               = var.tags
+    }
+  } : null
 }

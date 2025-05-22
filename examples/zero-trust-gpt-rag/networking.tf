@@ -27,3 +27,4 @@ module "virtual_network" {
   enable_telemetry    = var.enable_telemetry
 }
 
+## bastion

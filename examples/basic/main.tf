@@ -59,24 +59,4 @@ module "test" {
   resource_group_create  = false
   resource_group_name    = azurerm_resource_group.this.name # keep all supporting services in the same resource group
   use_private_networking = false
-
-  ai_service = {
-    custom_subdomain_name = "rhysaiservice"
-  }
-
-  azure_open_ai = {
-    deployments = {
-      gpt-4o-mini = {
-        name = "gpt-4o-mini"
-        model = {
-          format  = "OpenAI"
-          name    = "gpt-4o-mini"
-          version = "2024-07-18"
-        }
-        scale = {
-          type = "Standard"
-        }
-      }
-    }
-  }
 }

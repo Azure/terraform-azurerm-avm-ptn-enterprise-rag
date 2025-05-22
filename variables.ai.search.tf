@@ -6,14 +6,57 @@ variable "ai_search_create" {
 }
 
 variable "ai_search" {
-  type        = any
+  type = object({
+    allowed_ips = optional(list(string))
+    authentication_failure_mode = optional(string, {
+      aadOrApiKey = {
+        aadAuthFailureMode = "http401WithBearerChallenge"
+      }
+    })
+    customer_managed_key = optional(object({
+      key_vault_resource_id = string
+      key_name              = string
+      key_version           = optional(string, null)
+      user_assigned_identity = optional(object({
+        resource_id = string
+      }), null)
+    }))
+    customer_managed_key_enforcement_enabled = optional(bool)
+    hosting_mode                             = optional(string, "default")
+    local_authentication_enabled             = optional(bool, false)
+    lock = optional(object({
+      kind = string
+      name = optional(string, null)
+    }))
+    partition_count = optional(number, 1)
+    replica_count   = optional(number, 1)
+    role_assignments = optional(map(object({
+      role_definition_id_or_name             = string
+      principal_id                           = string
+      description                            = optional(string, null)
+      skip_service_principal_aad_check       = optional(bool, false)
+      condition                              = optional(string, null)
+      condition_version                      = optional(string, null)
+      delegated_managed_identity_resource_id = optional(string, null)
+      principal_type                         = optional(string, null)
+    })))
+    semantic_search_sku = optional(string, "free")
+    sku                 = optional(string, "standard")
+    tags                = optional(map(string), {})
+  })
   default     = {}
   description = "Azure AI Search Service to be created. For details concerning inputs, see https://registry.terraform.io/modules/Azure/avm-res-search-searchservice/azurerm/0.1.5?tab=inputs."
   nullable    = false
+}
+
+variable "ai_search_id" {
+  type        = string
+  default     = null
+  description = "The ID of the existing Azure AI Search. Only required if `ai_search_create` is set to false."
 
   validation {
-    condition     = !(var.use_private_networking) || (length(var.ai_search.private_endpoints) > 0)
-    error_message = "If use_private_networking is true, you must define private endpoints."
+    condition     = var.ai_search_create || (var.ai_search_id != null)
+    error_message = "If ai_search_create is false, you must provide an existing ai_search_id."
   }
 }
 

@@ -1,3 +1,7 @@
+locals {
+  resource_group_name = var.resource_group_create ? module.resource_group[0].name : var.resource_group_name
+}
+
 resource "random_string" "unique_name" {
   length  = 3
   special = false
